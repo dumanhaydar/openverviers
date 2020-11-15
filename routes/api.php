@@ -14,6 +14,39 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::get('/adresses', function (\Illuminate\Http\Request $request) {
+    $recherche = $request->input('recherche', false);
+    if($recherche) {
+        $addresses = \App\Models\Adresse::where('nom', 'regexp', '/.*'.$recherche.'/i')->with(['section', 'servicesIntradelZone','quartier'])->get();
+    } else {
+        $addresses = \App\Models\Adresse::with(['section', 'servicesIntradelZone','quartier'])->get();
+    }
+    return response()->json($addresses);
+});
+Route::get('/sections', function (\Illuminate\Http\Request $request) {
+    $recherche = $request->input('section', false);
+    if($recherche) {
+        $addresses = \App\Models\Section::where('nom', 'regexp', '/.*'.$recherche.'/i')->with(['adresses'])->get();
+    } else {
+        $addresses = \App\Models\Section::with(['adresses'])->get();
+    }
+    return response()->json($addresses);
+});
+Route::get('/quartiers', function (\Illuminate\Http\Request $request) {
+    $recherche = $request->input('quartier', false);
+    if($recherche) {
+        $addresses = \App\Models\Quartier::where('nom', 'regexp', '/.*'.$recherche.'/i')->with(['adresses'])->get();
+    } else {
+        $addresses = \App\Models\Quartier::with(['adresses'])->get();
+    }
+});
+Route::get('/services/intradel/zones', function (\Illuminate\Http\Request $request) {
+    $recherche = $request->input('zone', false);
+    if($recherche) {
+        $addresses = \App\Models\Services\Intradel\Zone::where('zone', (int)$recherche)->with(['adresses'])->get();
+    } else {
+        $addresses = \App\Models\Services\Intradel\Zone::with(['adresses'])->get();
+    }
+    return response()->json($addresses);
 });
