@@ -15,4 +15,9 @@ class Quartier extends Model
     {
         return $this->hasMany(Adresse::class);
     }
+
+    public function map()
+    {
+        return $this->hasOne(Map::class, 'properties.quartier_id', '_id');
+    }
 }

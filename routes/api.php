@@ -29,7 +29,7 @@ Route::get('/sections', function (\Illuminate\Http\Request $request) {
     if($recherche) {
         $addresses = \App\Models\Section::where('nom', 'regexp', '/.*'.$recherche.'/i')->with(['adresses'])->get();
     } else {
-        $addresses = \App\Models\Section::with(['adresses'])->get();
+        $addresses = \App\Models\Section::with(['adresses','map'])->get();
     }
     return response()->json($addresses);
 });
@@ -38,8 +38,24 @@ Route::get('/quartiers', function (\Illuminate\Http\Request $request) {
     if($recherche) {
         $addresses = \App\Models\Quartier::where('nom', 'regexp', '/.*'.$recherche.'/i')->with(['adresses'])->get();
     } else {
-        $addresses = \App\Models\Quartier::with(['adresses'])->get();
+        $addresses = \App\Models\Quartier::with(['adresses','map'])->get();
     }
+    return response()->json($addresses);
+});
+Route::get('/maps', function (\Illuminate\Http\Request $request) {
+    $addresses = \App\Models\Map::with(['quartier'])->get();
+    foreach($addresses as &$address) {
+        $properties = $address->properties;
+        $properties['quartier'] = $address->quartier;
+        $address->properties = $properties;
+        unset($address->quartier);
+    }
+    $features = $addresses->toArray();
+    $data = [
+        "type" => "FeatureCollection",
+        "features" =>  $features
+    ];
+    return response()->json($data);
 });
 Route::get('/services/intradel/zones', function (\Illuminate\Http\Request $request) {
     $recherche = $request->input('zone', false);
